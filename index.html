@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drip Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: "#333333",
+              accent: "#7EC8E3",
+              coral: "#FF6B6B",
+              mint: "#A8E6CF",
+              lavender: "#C5A3FF",
+              cream: "#FFF8F0",
+              beige: "#FAF5EF",
+              taupe: "#DDD5C7",
+            },
+            animation: {
+              marquee: "marquee 20s linear infinite",
+            },
+            keyframes: {
+              marquee: {
+                "0%": { transform: "translateX(0%)" },
+                "100%": { transform: "translateX(-50%)" },
+              },
+            },
+          },
+        },
+      }
+    </script>
+  </head>
+  <body class="bg-[#FAF5EF] text-[#333333] antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
