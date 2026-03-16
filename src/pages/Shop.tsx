@@ -4,10 +4,12 @@ import { products } from "@/data/products"
 import ModelViewer from "@/components/3d/ModelViewer"
 import { useCartStore } from "@/store/cartStore"
 import { useWishlistStore } from "@/store/wishlistStore"
+import StarRating from "@/components/reviews/StarRating"
+import { getProductRating } from "@/data/reviews"
 
 const categories = ["All", "Tops", "Bottoms", "Outerwear", "Dresses"]
 const genders = ["All", "Male", "Female"]
-const sortOptions = ["Featured", "Price: Low to High", "Price: High to Low", "New Arrivals"]
+const sortOptions = ["Featured", "Price: Low to High", "Price: High to Low", "New Arrivals", "Top Rated"]
 const sizes = ["XS", "S", "M", "L", "XL"]
 const ITEMS_PER_PAGE = 12
 
@@ -33,6 +35,11 @@ export default function Shop() {
     .sort((a, b) => {
       if (activeSort === "Price: Low to High") return a.price - b.price
       if (activeSort === "Price: High to Low") return b.price - a.price
+      if (activeSort === "Top Rated") {
+        const ratingA = getProductRating(a.id).average
+        const ratingB = getProductRating(b.id).average
+        return ratingB - ratingA
+      }
       return 0
     })
 
@@ -239,193 +246,218 @@ export default function Shop() {
 
       {/* Product Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-3 md:px-8 py-6 md:py-12 gap-4 md:gap-6">
-        {visible.map((product) => (
-          <div
-            key={product.id}
-            className="group"
-            onMouseEnter={() => setHoveredId(product.id)}
-            onMouseLeave={() => setHoveredId(null)}
-          >
-            {/* Card */}
-            <div className="aspect-[3/4] bg-white mb-3 overflow-hidden relative border border-[#E0E0E0] group-hover:border-[#7EC8E3] transition-all duration-500">
+        {visible.map((product) => {
+          const { average, count } = getProductRating(product.id)
+          return (
+            <div
+              key={product.id}
+              className="group"
+              onMouseEnter={() => setHoveredId(product.id)}
+              onMouseLeave={() => setHoveredId(null)}
+            >
+              {/* Card */}
+              <div className="aspect-[3/4] bg-white mb-3 overflow-hidden relative border border-[#E0E0E0] group-hover:border-[#7EC8E3] transition-all duration-500">
 
-              {/* Model */}
-              <Link to={`/product/${product.id}`} className="block w-full h-full">
-                <div className={`w-full h-full transition-all duration-700 ${hoveredId === product.id ? "scale-105" : "scale-100"}`}>
-                  <ModelViewer
-                    type={product.type}
-                    color={product.color}
-                    secondaryColor={product.secondaryColor}
-                    animate={hoveredId === product.id}
-                  />
-                </div>
-              </Link>
+                {/* Model */}
+                <Link to={`/product/${product.id}`} className="block w-full h-full">
+                  <div className={`w-full h-full transition-all duration-700 ${hoveredId === product.id ? "scale-105" : "scale-100"}`}>
+                    <ModelViewer
+                      type={product.type}
+                      color={product.color}
+                      secondaryColor={product.secondaryColor}
+                      animate={hoveredId === product.id}
+                    />
+                  </div>
+                </Link>
 
-              {/* Badges top left */}
-              <div className="absolute top-2 left-2 z-10 pointer-events-none flex flex-col gap-1">
-                <span className="text-[8px] md:text-[9px] tracking-widest bg-[#7EC8E3] text-white px-2 py-0.5 font-medium block">
-                  {product.tag}
-                </span>
-                {product.tag === "Limited" && (
-                  <span className="text-[8px] tracking-widest bg-[#FF6B6B]/10 text-[#FF6B6B] px-2 py-0.5 block border border-[#FF6B6B]/30">
-                    Low Stock
+                {/* Badges top left */}
+                <div className="absolute top-2 left-2 z-10 pointer-events-none flex flex-col gap-1">
+                  <span className="text-[8px] md:text-[9px] tracking-widest bg-[#7EC8E3] text-white px-2 py-0.5 font-medium block">
+                    {product.tag}
                   </span>
-                )}
-              </div>
+                  {product.tag === "Limited" && (
+                    <span className="text-[8px] tracking-widest bg-[#FF6B6B]/10 text-[#FF6B6B] px-2 py-0.5 block border border-[#FF6B6B]/30">
+                      Low Stock
+                    </span>
+                  )}
+                </div>
 
-              {/* Top right: gender + wishlist */}
-              <div className="absolute top-2 right-2 z-10 flex flex-col gap-1 items-end">
-                <span className="text-[8px] md:text-[9px] tracking-widest border border-[#E0E0E0] text-[#888888] px-2 py-0.5 bg-white/80">
-                  {product.gender}
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    toggleItem(product.id)
-                  }}
-                  className={`w-7 h-7 flex items-center justify-center bg-white/90 border transition-all duration-200 ${
-                    isWishlisted(product.id)
-                      ? "border-[#FF6B6B] bg-[#FFF0F0]"
-                      : "border-[#E0E0E0] hover:border-[#FF6B6B] hover:bg-[#FFF0F0]"
-                  }`}
-                  title={isWishlisted(product.id) ? "Remove from wishlist" : "Add to wishlist"}
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill={isWishlisted(product.id) ? "#FF6B6B" : "none"}
-                    stroke={isWishlisted(product.id) ? "#FF6B6B" : "#888888"}
-                    strokeWidth="1.5"
-                    className="transition-all duration-200"
-                  >
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                  </svg>
-                </button>
-              </div>
-
-              {/* Size selector on hover desktop */}
-              <div className={`hidden md:flex absolute bottom-12 left-0 right-0 justify-center gap-1 px-2 transition-all duration-300 z-10 ${hoveredId === product.id ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}>
-                {sizes.map((s) => (
+                {/* Top right: gender + wishlist */}
+                <div className="absolute top-2 right-2 z-10 flex flex-col gap-1 items-end">
+                  <span className="text-[8px] md:text-[9px] tracking-widest border border-[#E0E0E0] text-[#888888] px-2 py-0.5 bg-white/80">
+                    {product.gender}
+                  </span>
                   <button
-                    key={s}
                     onClick={(e) => {
                       e.preventDefault()
-                      setSelectedSizes((prev) => ({ ...prev, [product.id]: s }))
+                      e.stopPropagation()
+                      toggleItem(product.id)
                     }}
-                    className={`w-8 h-8 text-[9px] tracking-wider transition-all duration-150 border ${
-                      (selectedSizes[product.id] || "M") === s
-                        ? "bg-[#333333] text-white border-[#333333]"
-                        : "bg-white text-[#888888] border-[#E0E0E0] hover:border-[#333333] hover:text-[#333333]"
+                    className={`w-7 h-7 flex items-center justify-center bg-white/90 border transition-all duration-200 ${
+                      isWishlisted(product.id)
+                        ? "border-[#FF6B6B] bg-[#FFF0F0]"
+                        : "border-[#E0E0E0] hover:border-[#FF6B6B] hover:bg-[#FFF0F0]"
                     }`}
+                    title={isWishlisted(product.id) ? "Remove from wishlist" : "Add to wishlist"}
                   >
-                    {s}
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill={isWishlisted(product.id) ? "#FF6B6B" : "none"}
+                      stroke={isWishlisted(product.id) ? "#FF6B6B" : "#888888"}
+                      strokeWidth="1.5"
+                      className="transition-all duration-200"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
                   </button>
-                ))}
-              </div>
+                </div>
 
-              {/* Quick Add desktop */}
-              <button
-                onClick={() => handleAddToCart(product)}
-                className={`hidden md:block absolute bottom-0 left-0 right-0 text-[10px] tracking-widest uppercase py-3 text-center transition-all duration-300 z-10 ${
-                  addedId === product.id
-                    ? "bg-[#A8E6CF] text-[#333333] opacity-100 translate-y-0"
-                    : hoveredId === product.id
-                    ? "bg-[#333333] text-white opacity-100 translate-y-0 hover:bg-[#7EC8E3]"
-                    : "bg-[#333333] text-white opacity-0 translate-y-4"
-                }`}
-              >
-                {addedId === product.id
-                  ? "✓ Added to Cart"
-                  : `Add to Cart — ${selectedSizes[product.id] || "M"}`}
-              </button>
-            </div>
+                {/* Rating badge on card — bottom left */}
+                {count > 0 && (
+                  <div className="absolute bottom-14 md:bottom-14 left-2 z-10 pointer-events-none">
+                    <div className="flex items-center gap-1 bg-white/95 border border-[#E0E0E0] px-1.5 py-1">
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" strokeWidth="1.5">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                      <span className="text-[8px] font-semibold text-[#333333]">{average.toFixed(1)}</span>
+                      <span className="text-[8px] text-[#AAAAAA]">({count})</span>
+                    </div>
+                  </div>
+                )}
 
-            {/* Info */}
-            <Link to={`/product/${product.id}`} className="block mb-2">
-              <div className="flex justify-between items-start mb-1">
-                <p className="text-xs md:text-sm tracking-wide group-hover:text-[#7EC8E3] transition-colors duration-200 leading-tight pr-2 font-medium text-[#333333]">
-                  {product.name}
-                </p>
-                <p className="text-xs md:text-sm text-[#444444] shrink-0 font-medium">${product.price}</p>
-              </div>
-              <p className="text-[10px] md:text-xs text-[#AAAAAA] mb-1">
-                {product.category} · {product.gender}
-              </p>
-              <p className="text-[10px] text-[#BBBBBB] leading-relaxed hidden md:block">
-                {product.description}
-              </p>
-            </Link>
+                {/* Size selector on hover desktop */}
+                <div className={`hidden md:flex absolute bottom-12 left-0 right-0 justify-center gap-1 px-2 transition-all duration-300 z-10 ${hoveredId === product.id ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}>
+                  {sizes.map((s) => (
+                    <button
+                      key={s}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setSelectedSizes((prev) => ({ ...prev, [product.id]: s }))
+                      }}
+                      className={`w-8 h-8 text-[9px] tracking-wider transition-all duration-150 border ${
+                        (selectedSizes[product.id] || "M") === s
+                          ? "bg-[#333333] text-white border-[#333333]"
+                          : "bg-white text-[#888888] border-[#E0E0E0] hover:border-[#333333] hover:text-[#333333]"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
 
-            {/* Color swatches */}
-            <div className="flex gap-1.5 items-center mb-2">
-              <div
-                className="w-4 h-4 rounded-full ring-2 ring-[#7EC8E3] ring-offset-1 ring-offset-[#FAF5EF] border border-[#E0E0E0] cursor-pointer"
-                style={{ background: product.color }}
-              />
-              <div
-                className="w-4 h-4 rounded-full border border-[#E0E0E0] opacity-60 hover:opacity-100 hover:ring-1 hover:ring-[#7EC8E3] cursor-pointer transition-all"
-                style={{ background: product.secondaryColor }}
-              />
-              <span className="text-[9px] text-[#BBBBBB] ml-1 tracking-widest uppercase">2 colors</span>
-            </div>
-
-            {/* Mobile size + add */}
-            <div className="md:hidden space-y-2">
-              <div className="flex gap-1">
-                {sizes.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setSelectedSizes((prev) => ({ ...prev, [product.id]: s }))}
-                    className={`flex-1 py-1.5 text-[9px] tracking-wider transition-all duration-150 border ${
-                      (selectedSizes[product.id] || "M") === s
-                        ? "bg-[#333333] text-white border-[#333333]"
-                        : "bg-white text-[#888888] border-[#E0E0E0]"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    toggleItem(product.id)
-                  }}
-                  className={`w-10 border flex items-center justify-center py-2.5 transition-all ${
-                    isWishlisted(product.id)
-                      ? "border-[#FF6B6B] bg-[#FFF0F0]"
-                      : "border-[#E0E0E0] bg-white hover:border-[#FF6B6B]"
-                  }`}
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill={isWishlisted(product.id) ? "#FF6B6B" : "none"}
-                    stroke={isWishlisted(product.id) ? "#FF6B6B" : "#888888"}
-                    strokeWidth="1.5"
-                  >
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                  </svg>
-                </button>
+                {/* Quick Add desktop */}
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className={`flex-1 text-[10px] tracking-widest uppercase py-2.5 transition-all duration-300 font-medium border ${
+                  className={`hidden md:block absolute bottom-0 left-0 right-0 text-[10px] tracking-widest uppercase py-3 text-center transition-all duration-300 z-10 ${
                     addedId === product.id
-                      ? "bg-[#A8E6CF] text-[#333333] border-[#A8E6CF]"
-                      : "bg-white text-[#888888] border-[#E0E0E0] hover:border-[#333333] hover:text-[#333333] active:bg-[#333333] active:text-white"
+                      ? "bg-[#A8E6CF] text-[#333333] opacity-100 translate-y-0"
+                      : hoveredId === product.id
+                      ? "bg-[#333333] text-white opacity-100 translate-y-0 hover:bg-[#7EC8E3]"
+                      : "bg-[#333333] text-white opacity-0 translate-y-4"
                   }`}
                 >
-                  {addedId === product.id ? "✓ Added!" : "Add to Cart"}
+                  {addedId === product.id
+                    ? "✓ Added to Cart"
+                    : `Add to Cart — ${selectedSizes[product.id] || "M"}`}
                 </button>
               </div>
-            </div>
 
-          </div>
-        ))}
+              {/* Info */}
+              <Link to={`/product/${product.id}`} className="block mb-2">
+                <div className="flex justify-between items-start mb-1">
+                  <p className="text-xs md:text-sm tracking-wide group-hover:text-[#7EC8E3] transition-colors duration-200 leading-tight pr-2 font-medium text-[#333333]">
+                    {product.name}
+                  </p>
+                  <p className="text-xs md:text-sm text-[#444444] shrink-0 font-medium">${product.price}</p>
+                </div>
+                <p className="text-[10px] md:text-xs text-[#AAAAAA] mb-1">
+                  {product.category} · {product.gender}
+                </p>
+
+                {/* Star rating under category */}
+                {count > 0 && (
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <StarRating rating={average} size={10}/>
+                    <span className="text-[9px] text-[#AAAAAA]">({count})</span>
+                  </div>
+                )}
+
+                <p className="text-[10px] text-[#BBBBBB] leading-relaxed hidden md:block">
+                  {product.description}
+                </p>
+              </Link>
+
+              {/* Color swatches */}
+              <div className="flex gap-1.5 items-center mb-2">
+                <div
+                  className="w-4 h-4 rounded-full ring-2 ring-[#7EC8E3] ring-offset-1 ring-offset-[#FAF5EF] border border-[#E0E0E0] cursor-pointer"
+                  style={{ background: product.color }}
+                />
+                <div
+                  className="w-4 h-4 rounded-full border border-[#E0E0E0] opacity-60 hover:opacity-100 hover:ring-1 hover:ring-[#7EC8E3] cursor-pointer transition-all"
+                  style={{ background: product.secondaryColor }}
+                />
+                <span className="text-[9px] text-[#BBBBBB] ml-1 tracking-widest uppercase">2 colors</span>
+              </div>
+
+              {/* Mobile size + add */}
+              <div className="md:hidden space-y-2">
+                <div className="flex gap-1">
+                  {sizes.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSelectedSizes((prev) => ({ ...prev, [product.id]: s }))}
+                      className={`flex-1 py-1.5 text-[9px] tracking-wider transition-all duration-150 border ${
+                        (selectedSizes[product.id] || "M") === s
+                          ? "bg-[#333333] text-white border-[#333333]"
+                          : "bg-white text-[#888888] border-[#E0E0E0]"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      toggleItem(product.id)
+                    }}
+                    className={`w-10 border flex items-center justify-center py-2.5 transition-all ${
+                      isWishlisted(product.id)
+                        ? "border-[#FF6B6B] bg-[#FFF0F0]"
+                        : "border-[#E0E0E0] bg-white hover:border-[#FF6B6B]"
+                    }`}
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill={isWishlisted(product.id) ? "#FF6B6B" : "none"}
+                      stroke={isWishlisted(product.id) ? "#FF6B6B" : "#888888"}
+                      strokeWidth="1.5"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    className={`flex-1 text-[10px] tracking-widest uppercase py-2.5 transition-all duration-300 font-medium border ${
+                      addedId === product.id
+                        ? "bg-[#A8E6CF] text-[#333333] border-[#A8E6CF]"
+                        : "bg-white text-[#888888] border-[#E0E0E0] hover:border-[#333333] hover:text-[#333333] active:bg-[#333333] active:text-white"
+                    }`}
+                  >
+                    {addedId === product.id ? "✓ Added!" : "Add to Cart"}
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          )
+        })}
       </div>
 
       {/* Progress + Load More */}

@@ -4,6 +4,9 @@ import { products } from "@/data/products"
 import ModelViewer from "@/components/3d/ModelViewer"
 import { useCartStore } from "@/store/cartStore"
 import { useWishlistStore } from "@/store/wishlistStore"
+import ReviewsSection from "@/components/reviews/ReviewsSection"
+import StarRating from "@/components/reviews/StarRating"
+import { getProductRating } from "@/data/reviews"
 
 const sizes = ["XS", "S", "M", "L", "XL", "XXL"]
 
@@ -39,6 +42,7 @@ export default function ProductDetail() {
   }
 
   const wishlisted = isWishlisted(product.id)
+  const { average, count } = getProductRating(product.id)
 
   const handleAddToCart = () => {
     addItem({
@@ -99,7 +103,7 @@ export default function ProductDetail() {
             {product.gender}
           </div>
 
-          {/* Wishlist button on viewer */}
+          {/* Wishlist button */}
           <button
             onClick={() => toggleItem(product.id)}
             className={`absolute top-4 right-4 w-10 h-10 border flex items-center justify-center transition-all duration-300 z-10 ${
@@ -107,22 +111,18 @@ export default function ProductDetail() {
                 ? "border-[#FF6B6B] bg-[#FFF0F0]"
                 : "border-[#E0E0E0] bg-white/90 hover:border-[#FF6B6B] hover:bg-[#FFF0F0]"
             }`}
-            title={wishlisted ? "Remove from wishlist" : "Save to wishlist"}
           >
             <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
+              width="16" height="16" viewBox="0 0 24 24"
               fill={wishlisted ? "#FF6B6B" : "none"}
               stroke={wishlisted ? "#FF6B6B" : "#888888"}
               strokeWidth="1.5"
-              className="transition-all duration-300"
             >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
             </svg>
           </button>
 
-          {/* Wishlist status toast */}
+          {/* Wishlist toast */}
           {wishlisted && (
             <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-10">
               <Link
@@ -132,7 +132,7 @@ export default function ProductDetail() {
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="#FF6B6B" stroke="#FF6B6B" strokeWidth="1.5">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
-                Saved — View Wishlist →
+                Saved — View Wishlist
               </Link>
             </div>
           )}
@@ -164,6 +164,18 @@ export default function ProductDetail() {
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-2 leading-tight text-[#333333]">
             {product.name}
           </h1>
+
+          {/* Rating summary */}
+          {count > 0 && (
+            <div className="flex items-center gap-2 mb-3">
+              <StarRating rating={average} size={13} showNumber={true} count={count}/>
+              <span className="text-[9px] tracking-widest uppercase text-[#7EC8E3] cursor-pointer hover:underline underline-offset-2">
+                Read reviews
+              </span>
+            </div>
+          )}
+
+          {/* Description */}
           <p className="text-[#888888] text-sm mb-5 leading-relaxed max-w-md">
             {product.description}
           </p>
@@ -186,12 +198,10 @@ export default function ProductDetail() {
               <button
                 className="w-8 h-8 rounded-full ring-2 ring-[#7EC8E3] ring-offset-2 ring-offset-[#FAF5EF] border border-[#E0E0E0] transition-all"
                 style={{ background: product.color }}
-                title="Primary color"
               />
               <button
                 className="w-8 h-8 rounded-full border border-[#E0E0E0] opacity-60 hover:opacity-100 hover:ring-2 hover:ring-[#7EC8E3] hover:ring-offset-2 hover:ring-offset-[#FAF5EF] transition-all"
                 style={{ background: product.secondaryColor }}
-                title="Secondary color"
               />
               <span className="text-[9px] tracking-widest uppercase text-[#BBBBBB] ml-1">2 colorways</span>
             </div>
@@ -237,7 +247,7 @@ export default function ProductDetail() {
                   : "bg-[#333333] text-white hover:bg-[#7EC8E3]"
               }`}
             >
-              {added ? "✓ Added to Cart" : `Add to Cart — $${product.price}`}
+              {added ? "Added to Cart" : `Add to Cart — $${product.price}`}
             </button>
             <button
               onClick={() => toggleItem(product.id)}
@@ -246,12 +256,9 @@ export default function ProductDetail() {
                   ? "border-[#FF6B6B] bg-[#FF6B6B]/10"
                   : "border-[#E0E0E0] hover:border-[#FF6B6B] hover:bg-[#FFF0F0]"
               }`}
-              title={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
             >
               <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
+                width="18" height="18" viewBox="0 0 24 24"
                 fill={wishlisted ? "#FF6B6B" : "none"}
                 stroke={wishlisted ? "#FF6B6B" : "#888888"}
                 strokeWidth="1.5"
@@ -271,7 +278,7 @@ export default function ProductDetail() {
               <svg width="10" height="10" viewBox="0 0 24 24" fill="#FF6B6B" stroke="#FF6B6B" strokeWidth="1.5">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
-              Saved to wishlist — View all saved items →
+              Saved to wishlist — View all saved items
             </Link>
           )}
 
@@ -414,6 +421,12 @@ export default function ProductDetail() {
               </button>
             ))}
           </div>
+
+          {/* Reviews Section */}
+          <div id="reviews">
+            <ReviewsSection productId={product.id}/>
+          </div>
+
         </div>
       </div>
 
@@ -431,7 +444,7 @@ export default function ProductDetail() {
               to="/shop"
               className="text-[10px] tracking-widest uppercase text-[#AAAAAA] hover:text-[#7EC8E3] transition-colors"
             >
-              View All →
+              View All
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -455,8 +468,17 @@ export default function ProductDetail() {
                 </p>
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-[#888888]">${p.price}</p>
-                  <div className="w-3 h-3 rounded-full border border-[#E0E0E0]" style={{ background: p.color }} />
+                  <div className="w-3 h-3 rounded-full border border-[#E0E0E0]" style={{ background: p.color }}/>
                 </div>
+                {(() => {
+                  const { average: avg, count: cnt } = getProductRating(p.id)
+                  return cnt > 0 ? (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <StarRating rating={avg} size={9}/>
+                      <span className="text-[9px] text-[#AAAAAA]">({cnt})</span>
+                    </div>
+                  ) : null
+                })()}
               </Link>
             ))}
           </div>
