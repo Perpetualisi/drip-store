@@ -1,4 +1,3 @@
-
 /* ── RESET ── */
 * {
   margin: 0;
@@ -22,40 +21,40 @@ html {
 
 /* ── LIGHT THEME (default) ── */
 :root, [data-theme="light"] {
-  --bg-primary:     #FAF5EF;
-  --bg-secondary:   #FFFFFF;
-  --bg-tertiary:    #F4F4F4;
-  --bg-card:        #FFFFFF;
-  --text-primary:   #333333;
-  --text-secondary: #888888;
-  --text-muted:     #AAAAAA;
-  --text-faint:     #CCCCCC;
-  --border:         #E0E0E0;
-  --border-warm:    #DDD5C7;
-  --accent:         #7EC8E3;
-  --accent-mint:    #A8E6CF;
-  --accent-coral:   #FF6B6B;
-  --accent-lavender:#C5A3FF;
-  --navbar-bg:      rgba(255,255,255,0.95);
+  --bg-primary:      #FAF5EF;
+  --bg-secondary:    #FFFFFF;
+  --bg-tertiary:     #F4F4F4;
+  --bg-card:         #FFFFFF;
+  --text-primary:    #333333;
+  --text-secondary:  #888888;
+  --text-muted:      #AAAAAA;
+  --text-faint:      #CCCCCC;
+  --border:          #E0E0E0;
+  --border-warm:     #DDD5C7;
+  --accent:          #7EC8E3;
+  --accent-mint:     #A8E6CF;
+  --accent-coral:    #FF6B6B;
+  --accent-lavender: #C5A3FF;
+  --navbar-bg:       rgba(255,255,255,0.95);
 }
 
 /* ── DARK THEME ── */
 [data-theme="dark"] {
-  --bg-primary:     #0f0f0f;
-  --bg-secondary:   #1a1a1a;
-  --bg-tertiary:    #222222;
-  --bg-card:        #1a1a1a;
-  --text-primary:   #f0f0f0;
-  --text-secondary: #aaaaaa;
-  --text-muted:     #666666;
-  --text-faint:     #444444;
-  --border:         #2a2a2a;
-  --border-warm:    #2e2e2e;
-  --accent:         #7EC8E3;
-  --accent-mint:    #A8E6CF;
-  --accent-coral:   #FF6B6B;
-  --accent-lavender:#C5A3FF;
-  --navbar-bg:      rgba(26,26,26,0.95);
+  --bg-primary:      #0f0f0f;
+  --bg-secondary:    #1a1a1a;
+  --bg-tertiary:     #222222;
+  --bg-card:         #1a1a1a;
+  --text-primary:    #f0f0f0;
+  --text-secondary:  #aaaaaa;
+  --text-muted:      #666666;
+  --text-faint:      #444444;
+  --border:          #2a2a2a;
+  --border-warm:     #2e2e2e;
+  --accent:          #7EC8E3;
+  --accent-mint:     #A8E6CF;
+  --accent-coral:    #FF6B6B;
+  --accent-lavender: #C5A3FF;
+  --navbar-bg:       rgba(26,26,26,0.95);
 }
 
 /* ── BODY ── */
@@ -80,26 +79,67 @@ body {
   animation: marquee 24s linear infinite;
 }
 
-/* ── DARK MODE OVERRIDES ── */
+/* ════════════════════════════════════════════════════════════════
+   DARK MODE OVERRIDES
+   ----------------------------------------------------------------
+   lightningcss (Vite 6+) cannot minify escaped Tailwind arbitrary-
+   value selectors like  .bg-\[#2a2a2a\]  because it mis-tokenises
+   the  #  inside the brackets as a CSS color hash.
 
-[data-theme="dark"] .bg-white         { background-color: var(--bg-secondary) !important; }
-[data-theme="dark"] .bg-\[#FAF5EF\]  { background-color: var(--bg-primary) !important; }
-[data-theme="dark"] .bg-\[#FFF8F0\]  { background-color: var(--bg-primary) !important; }
-[data-theme="dark"] .bg-\[#F4F4F4\]  { background-color: var(--bg-tertiary) !important; }
-[data-theme="dark"] .bg-\[#FFFFFF\]  { background-color: var(--bg-secondary) !important; }
-[data-theme="dark"] .bg-\[#2a2a2a\]  { background-color: var(--bg-tertiary) !important; }
+   Fix: use the CSS custom-property cascade instead.
+   Every component already reads var(--bg-primary) etc. via the
+   [data-theme="dark"] block above, so the only thing left to do
+   here is force Tailwind's hard-coded inline hex classes to yield
+   to the theme variables.  We achieve that with a single
+   high-specificity rule on the [data-theme="dark"] element itself,
+   which cascades into every descendant without touching escaped
+   class selectors at all.
+   ════════════════════════════════════════════════════════════════ */
 
-[data-theme="dark"] .text-\[#333333\] { color: var(--text-primary) !important; }
-[data-theme="dark"] .text-\[#444444\] { color: var(--text-primary) !important; }
-[data-theme="dark"] .text-\[#888888\] { color: var(--text-secondary) !important; }
-[data-theme="dark"] .text-\[#AAAAAA\] { color: var(--text-muted) !important; }
-[data-theme="dark"] .text-\[#BBBBBB\] { color: var(--text-muted) !important; }
-[data-theme="dark"] .text-\[#CCCCCC\] { color: var(--text-faint) !important; }
+/* ── Background overrides ── */
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-card {
+  background-color: var(--bg-secondary) !important;
+}
 
-[data-theme="dark"] .border-\[#E0E0E0\] { border-color: var(--border) !important; }
-[data-theme="dark"] .border-\[#DDD5C7\] { border-color: var(--border-warm) !important; }
+/* Semantic helper classes — add these to JSX instead of raw hex where possible */
+[data-theme="dark"] .theme-bg-primary   { background-color: var(--bg-primary)   !important; }
+[data-theme="dark"] .theme-bg-secondary { background-color: var(--bg-secondary) !important; }
+[data-theme="dark"] .theme-bg-tertiary  { background-color: var(--bg-tertiary)  !important; }
 
-/* Input fields */
+/* ── Text overrides ── */
+[data-theme="dark"] .theme-text-primary   { color: var(--text-primary)   !important; }
+[data-theme="dark"] .theme-text-secondary { color: var(--text-secondary) !important; }
+[data-theme="dark"] .theme-text-muted     { color: var(--text-muted)     !important; }
+[data-theme="dark"] .theme-text-faint     { color: var(--text-faint)     !important; }
+
+/* ── Border overrides ── */
+[data-theme="dark"] .theme-border      { border-color: var(--border)      !important; }
+[data-theme="dark"] .theme-border-warm { border-color: var(--border-warm) !important; }
+
+/* ── Blanket dark-mode surface sweep ──────────────────────────────
+   Instead of targeting every Tailwind hex class individually,
+   we paint ALL white/near-white backgrounds dark in one pass and
+   let components override per their semantic role.               */
+[data-theme="dark"] main,
+[data-theme="dark"] section,
+[data-theme="dark"] header,
+[data-theme="dark"] footer,
+[data-theme="dark"] aside,
+[data-theme="dark"] article {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Cards, panels, drawers */
+[data-theme="dark"] .card,
+[data-theme="dark"] [class*="backdrop"],
+[data-theme="dark"] dialog {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border) !important;
+}
+
+/* ── Input fields ── */
 [data-theme="dark"] input,
 [data-theme="dark"] select,
 [data-theme="dark"] textarea {
@@ -108,25 +148,28 @@ body {
   border-color: var(--border) !important;
 }
 
-/* Nav */
+/* ── Navigation ── */
 [data-theme="dark"] nav {
-  background-color: var(--bg-secondary) !important;
+  background-color: var(--navbar-bg) !important;
   border-color: var(--border) !important;
 }
 
-/* Tables */
+/* ── Tables ── */
 [data-theme="dark"] table {
   color: var(--text-secondary) !important;
 }
 
-/* Hover overrides */
-[data-theme="dark"] .hover\:bg-\[#FAF5EF\]:hover { background-color: var(--bg-tertiary) !important; }
-[data-theme="dark"] .hover\:bg-white:hover        { background-color: var(--bg-secondary) !important; }
+/* ── Hover states ── */
+[data-theme="dark"] .theme-hover-bg:hover {
+  background-color: var(--bg-tertiary) !important;
+}
 
-/* Ring offset */
-[data-theme="dark"] .ring-offset-\[#FAF5EF\] { --tw-ring-offset-color: var(--bg-primary) !important; }
+/* ── Ring offset ── */
+[data-theme="dark"] * {
+  --tw-ring-offset-color: var(--bg-primary);
+}
 
-/* Scrollbar */
+/* ── Scrollbar ── */
 [data-theme="dark"] ::-webkit-scrollbar       { width: 6px; }
 [data-theme="dark"] ::-webkit-scrollbar-track { background: var(--bg-secondary); }
 [data-theme="dark"] ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
