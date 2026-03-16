@@ -1,4 +1,4 @@
-export type ProductType = "hoodie" | "dress" | "jacket" | "pants" | "coat" | "shorts" | "tee" | "skirt"
+export type ProductType = "hoodie" | "dress" | "jacket" | "pants" | "coat" | "shorts" | "tee" | "skirt" | "blazer"
 export type Gender = "Male" | "Female"
 
 export interface Product {
