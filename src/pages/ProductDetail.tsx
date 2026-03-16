@@ -7,73 +7,74 @@ import { useWishlistStore } from "@/store/wishlistStore"
 import ReviewsSection from "@/components/reviews/ReviewsSection"
 import StarRating from "@/components/reviews/StarRating"
 import { getProductRating } from "@/data/reviews"
+import { getProductStock, getViewerCount } from "@/data/stock"
 
 const sizes = ["XS", "S", "M", "L", "XL", "XXL"]
 
 const COLOR_VARIANTS: Record<string, { name: string; primary: string; secondary: string }[]> = {
   hoodie: [
-    { name: "Midnight",    primary: "#1a1a1a",  secondary: "#c8a96e" },
-    { name: "Ocean",       primary: "#2563eb",  secondary: "#93c5fd" },
-    { name: "Forest",      primary: "#166534",  secondary: "#86efac" },
-    { name: "Blush",       primary: "#be185d",  secondary: "#f9a8d4" },
-    { name: "Slate",       primary: "#475569",  secondary: "#cbd5e1" },
-    { name: "Cream",       primary: "#d4a96a",  secondary: "#fef3c7" },
+    { name: "Midnight",   primary: "#1a1a1a", secondary: "#c8a96e" },
+    { name: "Ocean",      primary: "#2563eb", secondary: "#93c5fd" },
+    { name: "Forest",     primary: "#166534", secondary: "#86efac" },
+    { name: "Blush",      primary: "#be185d", secondary: "#f9a8d4" },
+    { name: "Slate",      primary: "#475569", secondary: "#cbd5e1" },
+    { name: "Cream",      primary: "#d4a96a", secondary: "#fef3c7" },
   ],
   tee: [
-    { name: "Midnight",    primary: "#1a1a1a",  secondary: "#c8a96e" },
-    { name: "White",       primary: "#f5f5f5",  secondary: "#e2e8f0" },
-    { name: "Sky",         primary: "#0284c7",  secondary: "#bae6fd" },
-    { name: "Sage",        primary: "#4d7c0f",  secondary: "#bef264" },
-    { name: "Dusty Rose",  primary: "#9f1239",  secondary: "#fda4af" },
-    { name: "Sand",        primary: "#b45309",  secondary: "#fde68a" },
+    { name: "Midnight",   primary: "#1a1a1a", secondary: "#c8a96e" },
+    { name: "White",      primary: "#f5f5f5", secondary: "#e2e8f0" },
+    { name: "Sky",        primary: "#0284c7", secondary: "#bae6fd" },
+    { name: "Sage",       primary: "#4d7c0f", secondary: "#bef264" },
+    { name: "Dusty Rose", primary: "#9f1239", secondary: "#fda4af" },
+    { name: "Sand",       primary: "#b45309", secondary: "#fde68a" },
   ],
   jacket: [
-    { name: "Onyx",        primary: "#0f172a",  secondary: "#334155" },
-    { name: "Camel",       primary: "#92400e",  secondary: "#fcd34d" },
-    { name: "Cobalt",      primary: "#1d4ed8",  secondary: "#93c5fd" },
-    { name: "Burgundy",    primary: "#7f1d1d",  secondary: "#fca5a5" },
-    { name: "Olive",       primary: "#3f6212",  secondary: "#a3e635" },
-    { name: "Graphite",    primary: "#374151",  secondary: "#9ca3af" },
+    { name: "Onyx",      primary: "#0f172a", secondary: "#334155" },
+    { name: "Camel",     primary: "#92400e", secondary: "#fcd34d" },
+    { name: "Cobalt",    primary: "#1d4ed8", secondary: "#93c5fd" },
+    { name: "Burgundy",  primary: "#7f1d1d", secondary: "#fca5a5" },
+    { name: "Olive",     primary: "#3f6212", secondary: "#a3e635" },
+    { name: "Graphite",  primary: "#374151", secondary: "#9ca3af" },
   ],
   coat: [
-    { name: "Charcoal",    primary: "#1c1917",  secondary: "#a8a29e" },
-    { name: "Camel",       primary: "#a16207",  secondary: "#fde68a" },
-    { name: "Ivory",       primary: "#d6c9a8",  secondary: "#fef9ef" },
-    { name: "Navy",        primary: "#1e3a5f",  secondary: "#93c5fd" },
-    { name: "Moss",        primary: "#365314",  secondary: "#a3e635" },
-    { name: "Plum",        primary: "#581c87",  secondary: "#d8b4fe" },
+    { name: "Charcoal",  primary: "#1c1917", secondary: "#a8a29e" },
+    { name: "Camel",     primary: "#a16207", secondary: "#fde68a" },
+    { name: "Ivory",     primary: "#d6c9a8", secondary: "#fef9ef" },
+    { name: "Navy",      primary: "#1e3a5f", secondary: "#93c5fd" },
+    { name: "Moss",      primary: "#365314", secondary: "#a3e635" },
+    { name: "Plum",      primary: "#581c87", secondary: "#d8b4fe" },
   ],
   dress: [
-    { name: "Midnight",    primary: "#1a1a1a",  secondary: "#c8a96e" },
-    { name: "Blush",       primary: "#db2777",  secondary: "#fbcfe8" },
-    { name: "Sage",        primary: "#166534",  secondary: "#bbf7d0" },
-    { name: "Lilac",       primary: "#7c3aed",  secondary: "#ddd6fe" },
-    { name: "Terracotta",  primary: "#b45309",  secondary: "#fed7aa" },
-    { name: "Cobalt",      primary: "#1d4ed8",  secondary: "#bfdbfe" },
+    { name: "Midnight",   primary: "#1a1a1a", secondary: "#c8a96e" },
+    { name: "Blush",      primary: "#db2777", secondary: "#fbcfe8" },
+    { name: "Sage",       primary: "#166534", secondary: "#bbf7d0" },
+    { name: "Lilac",      primary: "#7c3aed", secondary: "#ddd6fe" },
+    { name: "Terracotta", primary: "#b45309", secondary: "#fed7aa" },
+    { name: "Cobalt",     primary: "#1d4ed8", secondary: "#bfdbfe" },
   ],
   skirt: [
-    { name: "Midnight",    primary: "#1a1a1a",  secondary: "#c8a96e" },
-    { name: "Blush",       primary: "#db2777",  secondary: "#fbcfe8" },
-    { name: "Lilac",       primary: "#7c3aed",  secondary: "#ddd6fe" },
-    { name: "Sage",        primary: "#166534",  secondary: "#bbf7d0" },
-    { name: "Caramel",     primary: "#92400e",  secondary: "#fde68a" },
-    { name: "Sky",         primary: "#0369a1",  secondary: "#bae6fd" },
+    { name: "Midnight",  primary: "#1a1a1a", secondary: "#c8a96e" },
+    { name: "Blush",     primary: "#db2777", secondary: "#fbcfe8" },
+    { name: "Lilac",     primary: "#7c3aed", secondary: "#ddd6fe" },
+    { name: "Sage",      primary: "#166534", secondary: "#bbf7d0" },
+    { name: "Caramel",   primary: "#92400e", secondary: "#fde68a" },
+    { name: "Sky",       primary: "#0369a1", secondary: "#bae6fd" },
   ],
   pants: [
-    { name: "Midnight",    primary: "#1a1a1a",  secondary: "#c8a96e" },
-    { name: "Navy",        primary: "#1e3a5f",  secondary: "#93c5fd" },
-    { name: "Olive",       primary: "#3f6212",  secondary: "#a3e635" },
-    { name: "Stone",       primary: "#78716c",  secondary: "#d6d3d1" },
-    { name: "Burgundy",    primary: "#7f1d1d",  secondary: "#fca5a5" },
-    { name: "Camel",       primary: "#92400e",  secondary: "#fcd34d" },
+    { name: "Midnight",  primary: "#1a1a1a", secondary: "#c8a96e" },
+    { name: "Navy",      primary: "#1e3a5f", secondary: "#93c5fd" },
+    { name: "Olive",     primary: "#3f6212", secondary: "#a3e635" },
+    { name: "Stone",     primary: "#78716c", secondary: "#d6d3d1" },
+    { name: "Burgundy",  primary: "#7f1d1d", secondary: "#fca5a5" },
+    { name: "Camel",     primary: "#92400e", secondary: "#fcd34d" },
   ],
   shorts: [
-    { name: "Midnight",    primary: "#1a1a1a",  secondary: "#c8a96e" },
-    { name: "Navy",        primary: "#1e3a5f",  secondary: "#93c5fd" },
-    { name: "Khaki",       primary: "#713f12",  secondary: "#fde68a" },
-    { name: "Coral",       primary: "#be123c",  secondary: "#fda4af" },
-    { name: "Forest",      primary: "#166534",  secondary: "#86efac" },
-    { name: "Sky",         primary: "#0369a1",  secondary: "#bae6fd" },
+    { name: "Midnight",  primary: "#1a1a1a", secondary: "#c8a96e" },
+    { name: "Navy",      primary: "#1e3a5f", secondary: "#93c5fd" },
+    { name: "Khaki",     primary: "#713f12", secondary: "#fde68a" },
+    { name: "Coral",     primary: "#be123c", secondary: "#fda4af" },
+    { name: "Forest",    primary: "#166534", secondary: "#86efac" },
+    { name: "Sky",       primary: "#0369a1", secondary: "#bae6fd" },
   ],
 }
 
@@ -114,8 +115,12 @@ export default function ProductDetail() {
   const selectedVariant = variants[selectedVariantIdx]
   const wishlisted = isWishlisted(product.id)
   const { average, count } = getProductRating(product.id)
+  const stock = getProductStock(product.id)
+  const viewers = getViewerCount(product.id)
+  const soldOut = stock.level === "sold_out"
 
   const handleAddToCart = () => {
+    if (soldOut) return
     addItem({
       id: product.id,
       name: product.name,
@@ -153,19 +158,28 @@ export default function ProductDetail() {
         {/* LEFT — 3D Viewer */}
         <div className="relative bg-white border-b lg:border-b-0 lg:border-r border-[#E0E0E0] flex items-center justify-center min-h-[70vw] md:min-h-[50vw] lg:min-h-0 lg:sticky lg:top-24 lg:h-[calc(100vh-6rem)]">
 
-          {/* Background glow — reacts to selected color */}
+          {/* Background glow */}
           <div
             className="absolute inset-0 opacity-8 pointer-events-none transition-all duration-700"
             style={{ background: `radial-gradient(circle at center, ${selectedVariant.primary}, transparent 70%)` }}
           />
 
-          {/* Model — uses selected variant colors */}
-          <div className="relative z-10 w-full h-full max-w-sm mx-auto p-6 md:p-10 lg:p-12">
+          {/* Sold out overlay */}
+          {soldOut && (
+            <div className="absolute inset-0 bg-white/60 z-20 flex items-center justify-center pointer-events-none">
+              <div className="border border-[#E0E0E0] bg-white px-6 py-3">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-[#AAAAAA] text-center">Sold Out</p>
+              </div>
+            </div>
+          )}
+
+          {/* Model */}
+          <div className={`relative z-10 w-full h-full max-w-sm mx-auto p-6 md:p-10 lg:p-12 ${soldOut ? "opacity-40" : ""}`}>
             <ModelViewer
               type={product.type}
               color={selectedVariant.primary}
               secondaryColor={selectedVariant.secondary}
-              animate={true}
+              animate={!soldOut}
             />
           </div>
 
@@ -201,12 +215,14 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* Color name label on viewer */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
-            <span className="text-[9px] tracking-widest uppercase text-[#AAAAAA] bg-white/90 border border-[#E0E0E0] px-3 py-1.5">
-              {selectedVariant.name}
-            </span>
-          </div>
+          {/* Color name label */}
+          {!soldOut && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+              <span className="text-[9px] tracking-widest uppercase text-[#AAAAAA] bg-white/90 border border-[#E0E0E0] px-3 py-1.5">
+                {selectedVariant.name}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* RIGHT — Product Info */}
@@ -220,9 +236,14 @@ export default function ProductDetail() {
             <span className="text-[9px] tracking-widest text-[#AAAAAA] uppercase border border-[#E0E0E0] px-2 py-1">
               {product.category}
             </span>
-            {product.tag === "Limited" && (
-              <span className="text-[9px] tracking-widest text-[#FF6B6B] border border-[#FF6B6B]/30 bg-[#FF6B6B]/5 px-2 py-1 uppercase">
-                Low Stock
+            {stock.urgent && !soldOut && (
+              <span className="text-[9px] tracking-widest text-[#FF6B6B] border border-[#FF6B6B]/30 bg-[#FF6B6B]/5 px-2 py-1 uppercase animate-pulse">
+                {stock.label}
+              </span>
+            )}
+            {soldOut && (
+              <span className="text-[9px] tracking-widest text-[#AAAAAA] border border-[#E0E0E0] bg-[#F4F4F4] px-2 py-1 uppercase">
+                Sold Out
               </span>
             )}
           </div>
@@ -248,76 +269,160 @@ export default function ProductDetail() {
           </p>
 
           {/* Price */}
-          <div className="flex items-baseline gap-3 mb-6 pb-6 border-b border-[#E0E0E0]">
-            <span className="text-3xl font-bold text-[#333333]">${product.price}</span>
-            <span className="text-[#CCCCCC] text-sm line-through">${Math.round(product.price * 1.2)}</span>
-            <span className="text-[10px] tracking-widest text-[#A8E6CF] uppercase font-medium bg-[#A8E6CF]/10 px-2 py-0.5">
-              Save 20%
+          <div className="flex items-baseline gap-3 mb-4 pb-4 border-b border-[#E0E0E0]">
+            <span className={`text-3xl font-bold ${soldOut ? "text-[#AAAAAA]" : "text-[#333333]"}`}>
+              ${product.price}
             </span>
+            <span className="text-[#CCCCCC] text-sm line-through">${Math.round(product.price * 1.2)}</span>
+            {!soldOut && (
+              <span className="text-[10px] tracking-widest text-[#A8E6CF] uppercase font-medium bg-[#A8E6CF]/10 px-2 py-0.5">
+                Save 20%
+              </span>
+            )}
+          </div>
+
+          {/* ── STOCK + URGENCY ── */}
+          <div className="mb-5">
+
+            {/* Viewer count */}
+            {!soldOut && (
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex -space-x-1">
+                  {Array.from({ length: Math.min(viewers, 5) }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-4 h-4 rounded-full border border-white flex items-center justify-center text-[6px] font-bold text-white"
+                      style={{ background: ["#7EC8E3","#A8E6CF","#C5A3FF","#FF6B6B","#F59E0B"][i] }}
+                    >
+                      {String.fromCharCode(65 + i)}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[9px] tracking-wide text-[#888888]">
+                  <span className="font-semibold text-[#333333]">{viewers} people</span> viewing this right now
+                </p>
+                <div className="w-1.5 h-1.5 rounded-full bg-[#A8E6CF] animate-pulse ml-auto shrink-0"/>
+              </div>
+            )}
+
+            {/* Stock bar — only show when not in_stock */}
+            {stock.level !== "in_stock" && (
+              <div className={`border px-4 py-3 ${
+                soldOut
+                  ? "border-[#E0E0E0] bg-[#F4F4F4]"
+                  : stock.level === "last_one"
+                  ? "border-[#FF6B6B]/40 bg-[#FF6B6B]/5"
+                  : stock.level === "very_low"
+                  ? "border-[#FF6B6B]/30 bg-[#FFF8F8]"
+                  : "border-[#F59E0B]/30 bg-[#FFFBF0]"
+              }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {!soldOut && (
+                      <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${stock.urgent ? "bg-[#FF6B6B]" : "bg-[#F59E0B]"}`}/>
+                    )}
+                    <p className={`text-[10px] tracking-widest uppercase font-semibold ${
+                      soldOut ? "text-[#AAAAAA]" : stock.urgent ? "text-[#FF6B6B]" : "text-[#F59E0B]"
+                    }`}>
+                      {stock.label}
+                    </p>
+                  </div>
+                  {!soldOut && (
+                    <p className="text-[9px] text-[#AAAAAA]">{stock.quantity} of 50 remaining</p>
+                  )}
+                </div>
+
+                {/* Progress bar */}
+                {!soldOut && (
+                  <div className="w-full h-1.5 bg-[#E0E0E0] rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${stock.urgent ? "bg-[#FF6B6B]" : "bg-[#F59E0B]"}`}
+                      style={{ width: `${Math.max((stock.quantity / 50) * 100, 4)}%` }}
+                    />
+                  </div>
+                )}
+
+                {soldOut && (
+                  <p className="text-[9px] text-[#AAAAAA]">
+                    Join the waitlist to be notified when this restocks.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Urgency message */}
+            {(stock.level === "last_one" || stock.level === "very_low") && (
+              <p className="text-[9px] text-[#FF6B6B] mt-2 flex items-center gap-1.5">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                High demand — this item sells out frequently
+              </p>
+            )}
           </div>
 
           {/* ── COLOR VARIANTS ── */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] tracking-widest uppercase text-[#AAAAAA]">
-                Color — <span className="text-[#333333] font-medium">{selectedVariant.name}</span>
-              </p>
-              <span className="text-[9px] tracking-widest uppercase text-[#AAAAAA]">
-                {variants.length} colorways
-              </span>
-            </div>
+          {!soldOut && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] tracking-widest uppercase text-[#AAAAAA]">
+                  Color — <span className="text-[#333333] font-medium">{selectedVariant.name}</span>
+                </p>
+                <span className="text-[9px] tracking-widest uppercase text-[#AAAAAA]">
+                  {variants.length} colorways
+                </span>
+              </div>
 
-            {/* Swatch grid */}
-            <div className="flex flex-wrap gap-2.5">
-              {variants.map((variant, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedVariantIdx(idx)}
-                  title={variant.name}
-                  className="relative group"
-                >
-                  {/* Outer ring when selected */}
-                  <div className={`w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center ${
-                    selectedVariantIdx === idx
-                      ? "ring-2 ring-offset-2 ring-[#7EC8E3] ring-offset-[#FAF5EF]"
-                      : "hover:ring-2 hover:ring-offset-2 hover:ring-[#CCCCCC] hover:ring-offset-[#FAF5EF]"
-                  }`}>
-                    {/* Split swatch — primary on left, secondary on right */}
-                    <div className="w-7 h-7 rounded-full overflow-hidden border border-[#E0E0E0] flex">
-                      <div className="w-1/2 h-full" style={{ background: variant.primary }}/>
-                      <div className="w-1/2 h-full" style={{ background: variant.secondary }}/>
+              {/* Swatches */}
+              <div className="flex flex-wrap gap-2.5">
+                {variants.map((variant, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedVariantIdx(idx)}
+                    title={variant.name}
+                    className="relative group"
+                  >
+                    <div className={`w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center ${
+                      selectedVariantIdx === idx
+                        ? "ring-2 ring-offset-2 ring-[#7EC8E3] ring-offset-[#FAF5EF]"
+                        : "hover:ring-2 hover:ring-offset-2 hover:ring-[#CCCCCC] hover:ring-offset-[#FAF5EF]"
+                    }`}>
+                      <div className="w-7 h-7 rounded-full overflow-hidden border border-[#E0E0E0] flex">
+                        <div className="w-1/2 h-full" style={{ background: variant.primary }}/>
+                        <div className="w-1/2 h-full" style={{ background: variant.secondary }}/>
+                      </div>
                     </div>
-                  </div>
-                  {/* Checkmark when selected */}
-                  {selectedVariantIdx === idx && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
-                        <path d="M20 6L9 17l-5-5"/>
-                      </svg>
+                    {selectedVariantIdx === idx && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
+                          <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                      </div>
+                    )}
+                    <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[8px] tracking-wide text-[#888888] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                      {variant.name}
                     </div>
-                  )}
-                  {/* Tooltip */}
-                  <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[8px] tracking-wide text-[#888888] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    {variant.name}
-                  </div>
-                </button>
-              ))}
-            </div>
+                  </button>
+                ))}
+              </div>
 
-            {/* Color preview bar */}
-            <div className="mt-5 h-1.5 rounded-full overflow-hidden flex gap-0.5">
-              {variants.map((v, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedVariantIdx(idx)}
-                  className={`flex-1 h-full transition-all duration-300 ${
-                    selectedVariantIdx === idx ? "opacity-100 scale-y-150" : "opacity-40 hover:opacity-70"
-                  }`}
-                  style={{ background: v.primary }}
-                />
-              ))}
+              {/* Color bar */}
+              <div className="mt-5 h-1.5 rounded-full overflow-hidden flex gap-0.5">
+                {variants.map((v, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedVariantIdx(idx)}
+                    className={`flex-1 h-full transition-all duration-300 ${
+                      selectedVariantIdx === idx ? "opacity-100 scale-y-150" : "opacity-40 hover:opacity-70"
+                    }`}
+                    style={{ background: v.primary }}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Size selector */}
           <div className="mb-6">
@@ -336,9 +441,12 @@ export default function ProductDetail() {
               {sizes.map((s) => (
                 <button
                   key={s}
-                  onClick={() => setSelectedSize(s)}
+                  onClick={() => !soldOut && setSelectedSize(s)}
+                  disabled={soldOut}
                   className={`py-2.5 md:py-3 text-xs tracking-wider uppercase border transition-all duration-200 ${
-                    selectedSize === s
+                    soldOut
+                      ? "bg-[#F4F4F4] text-[#CCCCCC] border-[#E0E0E0] cursor-not-allowed"
+                      : selectedSize === s
                       ? "bg-[#333333] text-white border-[#333333] font-medium"
                       : "bg-white text-[#888888] border-[#E0E0E0] hover:border-[#333333] hover:text-[#333333]"
                   }`}
@@ -353,11 +461,16 @@ export default function ProductDetail() {
           <div className="flex gap-2 md:gap-3 mb-6">
             <button
               onClick={handleAddToCart}
+              disabled={soldOut}
               className={`flex-1 py-4 text-xs md:text-sm tracking-widest uppercase font-medium transition-all duration-300 ${
-                added ? "bg-[#A8E6CF] text-[#333333]" : "bg-[#333333] text-white hover:bg-[#7EC8E3]"
+                soldOut
+                  ? "bg-[#F4F4F4] text-[#AAAAAA] cursor-not-allowed"
+                  : added
+                  ? "bg-[#A8E6CF] text-[#333333]"
+                  : "bg-[#333333] text-white hover:bg-[#7EC8E3]"
               }`}
             >
-              {added ? "Added to Cart" : `Add to Cart — $${product.price}`}
+              {soldOut ? "Sold Out" : added ? "Added to Cart" : `Add to Cart — $${product.price}`}
             </button>
             <button
               onClick={() => toggleItem(product.id)}
@@ -373,6 +486,24 @@ export default function ProductDetail() {
               </svg>
             </button>
           </div>
+
+          {/* Sold out waitlist */}
+          {soldOut && (
+            <div className="mb-6 border border-[#E0E0E0] bg-white p-4">
+              <p className="text-[10px] tracking-widest uppercase text-[#333333] font-medium mb-1">Join the Waitlist</p>
+              <p className="text-[9px] text-[#AAAAAA] mb-3">Be the first to know when this item restocks.</p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  className="flex-1 border border-[#E0E0E0] px-3 py-2 text-xs text-[#333333] outline-none focus:border-[#7EC8E3] transition-colors placeholder-[#CCCCCC]"
+                />
+                <button className="px-4 py-2 bg-[#333333] text-white text-[9px] tracking-widest uppercase hover:bg-[#7EC8E3] transition-colors">
+                  Notify Me
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Wishlist link */}
           {wishlisted && (
@@ -535,32 +666,46 @@ export default function ProductDetail() {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {related.map((p) => (
-              <Link to={`/product/${p.id}`} key={p.id} className="group">
-                <div className="aspect-[3/4] bg-[#FAF5EF] mb-3 border border-[#E0E0E0] group-hover:border-[#7EC8E3] transition-all duration-500 overflow-hidden relative">
-                  <div className="w-full h-full group-hover:scale-105 transition-transform duration-700">
-                    <ModelViewer type={p.type} color={p.color} secondaryColor={p.secondaryColor} animate={false}/>
+            {related.map((p) => {
+              const { average: avg, count: cnt } = getProductRating(p.id)
+              const pStock = getProductStock(p.id)
+              return (
+                <Link to={`/product/${p.id}`} key={p.id} className="group">
+                  <div className="aspect-[3/4] bg-[#FAF5EF] mb-3 border border-[#E0E0E0] group-hover:border-[#7EC8E3] transition-all duration-500 overflow-hidden relative">
+                    <div className={`w-full h-full group-hover:scale-105 transition-transform duration-700 ${pStock.level === "sold_out" ? "opacity-40" : ""}`}>
+                      <ModelViewer type={p.type} color={p.color} secondaryColor={p.secondaryColor} animate={false}/>
+                    </div>
+                    <span className="absolute top-2 left-2 text-[8px] tracking-widest bg-[#7EC8E3] text-white px-1.5 py-0.5">
+                      {p.tag}
+                    </span>
+                    {pStock.urgent && (
+                      <div className="absolute bottom-2 left-2 z-10">
+                        <span className={`text-[7px] tracking-widest uppercase px-1.5 py-0.5 font-semibold border ${
+                          pStock.level === "sold_out"
+                            ? "bg-[#F4F4F4] text-[#AAAAAA] border-[#E0E0E0]"
+                            : pStock.level === "last_one"
+                            ? "bg-[#FF6B6B] text-white border-[#FF6B6B]"
+                            : "bg-white text-[#FF6B6B] border-[#FF6B6B]/40"
+                        }`}>
+                          {pStock.label}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <span className="absolute top-2 left-2 text-[8px] tracking-widest bg-[#7EC8E3] text-white px-1.5 py-0.5">
-                    {p.tag}
-                  </span>
-                </div>
-                <p className="text-xs tracking-wide group-hover:text-[#7EC8E3] transition-colors mb-1 text-[#333333] font-medium">{p.name}</p>
-                <div className="flex items-center gap-2">
-                  <p className="text-xs text-[#888888]">${p.price}</p>
-                  <div className="w-3 h-3 rounded-full border border-[#E0E0E0]" style={{ background: p.color }}/>
-                </div>
-                {(() => {
-                  const { average: avg, count: cnt } = getProductRating(p.id)
-                  return cnt > 0 ? (
+                  <p className="text-xs tracking-wide group-hover:text-[#7EC8E3] transition-colors mb-1 text-[#333333] font-medium">{p.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-[#888888]">${p.price}</p>
+                    <div className="w-3 h-3 rounded-full border border-[#E0E0E0]" style={{ background: p.color }}/>
+                  </div>
+                  {cnt > 0 && (
                     <div className="flex items-center gap-1 mt-0.5">
                       <StarRating rating={avg} size={9}/>
                       <span className="text-[9px] text-[#AAAAAA]">({cnt})</span>
                     </div>
-                  ) : null
-                })()}
-              </Link>
-            ))}
+                  )}
+                </Link>
+              )
+            })}
           </div>
         </div>
       )}
