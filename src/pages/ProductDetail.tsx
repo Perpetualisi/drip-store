@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, Link } from "react-router-dom"
 import { products } from "@/data/products"
 import ModelViewer from "@/components/3d/ModelViewer"
@@ -90,8 +90,22 @@ export default function ProductDetail() {
 
   const [selectedSize, setSelectedSize] = useState("M")
   const [added, setAdded] = useState(false)
+  const [stickyAdded, setStickyAdded] = useState(false)
   const [activeTab, setActiveTab] = useState<"details" | "sizing" | "shipping">("details")
   const [selectedVariantIdx, setSelectedVariantIdx] = useState(0)
+  const [showSticky, setShowSticky] = useState(false)
+
+  const ctaRef = useRef<HTMLDivElement>(null)
+
+  // Show sticky bar when main CTA scrolls out of view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowSticky(!entry.isIntersecting),
+      { threshold: 0 }
+    )
+    if (ctaRef.current) observer.observe(ctaRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   if (!product) {
     return (
@@ -136,12 +150,159 @@ export default function ProductDetail() {
     setTimeout(() => setAdded(false), 2000)
   }
 
+  const handleStickyAddToCart = () => {
+    if (soldOut) return
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      color: selectedVariant.primary,
+      secondaryColor: selectedVariant.secondary,
+      type: product.type,
+      gender: product.gender,
+      quantity: 1,
+      size: selectedSize,
+    })
+    setStickyAdded(true)
+    setTimeout(() => setStickyAdded(false), 2000)
+  }
+
   const related = products
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4)
 
   return (
     <div className="min-h-screen bg-[#FAF5EF] text-[#333333]">
+
+      {/* ── STICKY ADD TO CART BAR ── */}
+      <div className={`fixed bottom-0 left-0 right-0 z-50 transition-all duration-300 ${
+        showSticky && !soldOut ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
+      }`}>
+        {/* Blur backdrop */}
+        <div className="bg-white/95 border-t border-[#E0E0E0]" style={{ backdropFilter: "blur(12px)" }}>
+          <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center gap-3 md:gap-5">
+
+            {/* Mini model thumbnail */}
+            <div className="w-10 h-12 shrink-0 bg-[#FAF5EF] border border-[#E0E0E0] overflow-hidden hidden sm:block">
+              <ModelViewer
+                type={product.type}
+                color={selectedVariant.primary}
+                secondaryColor={selectedVariant.secondary}
+                animate={false}
+              />
+            </div>
+
+            {/* Product info */}
+            <div className="flex flex-col min-w-0 shrink-0">
+              <p className="text-xs font-semibold text-[#333333] truncate max-w-[120px] md:max-w-none">{product.name}</p>
+              <p className="text-[9px] text-[#AAAAAA] tracking-wide">{selectedVariant.name} · {selectedSize}</p>
+            </div>
+
+            {/* Color swatch */}
+            <div className="shrink-0 hidden md:flex items-center gap-1.5">
+              {variants.slice(0, 4).map((v, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedVariantIdx(idx)}
+                  className={`w-5 h-5 rounded-full border transition-all duration-150 ${
+                    selectedVariantIdx === idx
+                      ? "ring-2 ring-[#7EC8E3] ring-offset-1 border-transparent"
+                      : "border-[#E0E0E0] hover:border-[#AAAAAA]"
+                  }`}
+                  style={{ background: v.primary }}
+                  title={v.name}
+                />
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-8 bg-[#E0E0E0] shrink-0 hidden md:block"/>
+
+            {/* Size selector */}
+            <div className="flex gap-1 shrink-0 hidden md:flex">
+              {sizes.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSelectedSize(s)}
+                  className={`w-8 h-8 text-[9px] tracking-wider uppercase border transition-all duration-150 ${
+                    selectedSize === s
+                      ? "bg-[#333333] text-white border-[#333333]"
+                      : "bg-white text-[#888888] border-[#E0E0E0] hover:border-[#333333] hover:text-[#333333]"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-8 bg-[#E0E0E0] shrink-0 hidden md:block"/>
+
+            {/* Price */}
+            <div className="shrink-0 hidden md:block">
+              <p className="text-sm font-bold text-[#333333]">${product.price}</p>
+              <p className="text-[9px] text-[#AAAAAA] line-through">${Math.round(product.price * 1.2)}</p>
+            </div>
+
+            {/* Stock urgency */}
+            {stock.urgent && (
+              <div className="shrink-0 hidden lg:flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#FF6B6B] animate-pulse"/>
+                <span className="text-[9px] tracking-widest uppercase text-[#FF6B6B] font-medium whitespace-nowrap">
+                  {stock.label}
+                </span>
+              </div>
+            )}
+
+            {/* Spacer */}
+            <div className="flex-1"/>
+
+            {/* Mobile size — compact */}
+            <div className="flex gap-1 md:hidden">
+              {["S","M","L","XL"].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSelectedSize(s)}
+                  className={`w-7 h-7 text-[8px] tracking-wider uppercase border transition-all duration-150 ${
+                    selectedSize === s
+                      ? "bg-[#333333] text-white border-[#333333]"
+                      : "bg-white text-[#888888] border-[#E0E0E0]"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+
+            {/* Add to Cart button */}
+            <button
+              onClick={handleStickyAddToCart}
+              className={`shrink-0 px-5 md:px-8 py-3 text-[10px] md:text-xs tracking-widest uppercase font-medium transition-all duration-300 whitespace-nowrap ${
+                stickyAdded
+                  ? "bg-[#A8E6CF] text-[#333333]"
+                  : "bg-[#333333] text-white hover:bg-[#7EC8E3]"
+              }`}
+            >
+              {stickyAdded ? "✓ Added!" : `Add to Cart — $${product.price}`}
+            </button>
+
+            {/* Wishlist button */}
+            <button
+              onClick={() => toggleItem(product.id)}
+              className={`shrink-0 w-10 h-10 border flex items-center justify-center transition-all duration-300 ${
+                wishlisted ? "border-[#FF6B6B] bg-[#FFF0F0]" : "border-[#E0E0E0] hover:border-[#FF6B6B] hover:bg-[#FFF0F0]"
+              }`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24"
+                fill={wishlisted ? "#FF6B6B" : "none"}
+                stroke={wishlisted ? "#FF6B6B" : "#888888"}
+                strokeWidth="1.5">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Breadcrumb */}
       <div className="px-4 md:px-8 py-4 border-b border-[#E0E0E0] bg-white flex items-center gap-2 text-[10px] tracking-widest uppercase text-[#AAAAAA] overflow-x-auto">
@@ -283,8 +444,6 @@ export default function ProductDetail() {
 
           {/* ── STOCK + URGENCY ── */}
           <div className="mb-5">
-
-            {/* Viewer count */}
             {!soldOut && (
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex -space-x-1">
@@ -305,16 +464,12 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {/* Stock bar — only show when not in_stock */}
             {stock.level !== "in_stock" && (
               <div className={`border px-4 py-3 ${
-                soldOut
-                  ? "border-[#E0E0E0] bg-[#F4F4F4]"
-                  : stock.level === "last_one"
-                  ? "border-[#FF6B6B]/40 bg-[#FF6B6B]/5"
-                  : stock.level === "very_low"
-                  ? "border-[#FF6B6B]/30 bg-[#FFF8F8]"
-                  : "border-[#F59E0B]/30 bg-[#FFFBF0]"
+                soldOut ? "border-[#E0E0E0] bg-[#F4F4F4]" :
+                stock.level === "last_one" ? "border-[#FF6B6B]/40 bg-[#FF6B6B]/5" :
+                stock.level === "very_low" ? "border-[#FF6B6B]/30 bg-[#FFF8F8]" :
+                "border-[#F59E0B]/30 bg-[#FFFBF0]"
               }`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -331,8 +486,6 @@ export default function ProductDetail() {
                     <p className="text-[9px] text-[#AAAAAA]">{stock.quantity} of 50 remaining</p>
                   )}
                 </div>
-
-                {/* Progress bar */}
                 {!soldOut && (
                   <div className="w-full h-1.5 bg-[#E0E0E0] rounded-full overflow-hidden">
                     <div
@@ -341,7 +494,6 @@ export default function ProductDetail() {
                     />
                   </div>
                 )}
-
                 {soldOut && (
                   <p className="text-[9px] text-[#AAAAAA]">
                     Join the waitlist to be notified when this restocks.
@@ -350,7 +502,6 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {/* Urgency message */}
             {(stock.level === "last_one" || stock.level === "very_low") && (
               <p className="text-[9px] text-[#FF6B6B] mt-2 flex items-center gap-1.5">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -374,8 +525,6 @@ export default function ProductDetail() {
                   {variants.length} colorways
                 </span>
               </div>
-
-              {/* Swatches */}
               <div className="flex flex-wrap gap-2.5">
                 {variants.map((variant, idx) => (
                   <button
@@ -407,8 +556,6 @@ export default function ProductDetail() {
                   </button>
                 ))}
               </div>
-
-              {/* Color bar */}
               <div className="mt-5 h-1.5 rounded-full overflow-hidden flex gap-0.5">
                 {variants.map((v, idx) => (
                   <button
@@ -457,8 +604,8 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* CTA buttons */}
-          <div className="flex gap-2 md:gap-3 mb-6">
+          {/* ── MAIN CTA — observed by IntersectionObserver ── */}
+          <div ref={ctaRef} className="flex gap-2 md:gap-3 mb-6">
             <button
               onClick={handleAddToCart}
               disabled={soldOut}
@@ -709,6 +856,9 @@ export default function ProductDetail() {
           </div>
         </div>
       )}
+
+      {/* Bottom padding for sticky bar */}
+      <div className="h-20"/>
 
     </div>
   )
