@@ -2,12 +2,14 @@ import { useState, useEffect, useRef } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useCartStore } from "@/store/cartStore"
 import { useWishlistStore } from "@/store/wishlistStore"
+import { useThemeStore } from "@/store/themeStore"
 import { products } from "@/data/products"
 import ModelViewer from "@/components/3d/ModelViewer"
 
 export default function Navbar() {
   const { count, openCart } = useCartStore()
   const { count: wishlistCount } = useWishlistStore()
+  const { isDark, toggle } = useThemeStore()
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -82,20 +84,38 @@ export default function Navbar() {
   const wCount = wishlistCount()
   const cCount = count()
 
+  const navBg = isDark ? "#1a1a1a" : "white"
+  const navBorder = isDark ? "#2a2a2a" : "#E0E0E0"
+  const textPrimary = isDark ? "#f0f0f0" : "#333333"
+  const textMuted = isDark ? "#666666" : "#888888"
+  const textFaint = isDark ? "#444444" : "#AAAAAA"
+  const bgPrimary = isDark ? "#0f0f0f" : "#FAF5EF"
+  const bgTertiary = isDark ? "#222222" : "#F4F4F4"
+  const announcementBg = isDark ? "#111111" : "#333333"
+
   return (
     <>
       {/* Announcement bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-[#333333] text-white text-center py-2 px-4">
+      <div
+        className="fixed top-0 left-0 right-0 z-50 text-white text-center py-2 px-4"
+        style={{ backgroundColor: announcementBg }}
+      >
         <p className="text-[9px] tracking-[0.25em] uppercase">
           Free shipping over $100 &nbsp;·&nbsp; New drops weekly &nbsp;·&nbsp;
-          <Link to="/sale" className="text-[#7EC8E3] hover:underline ml-1">Shop Sale →</Link>
+          <Link to="/sale" className="text-[#7EC8E3] hover:underline ml-1">Shop Sale</Link>
         </p>
       </div>
 
       {/* Main Navbar */}
-      <nav className={`fixed top-8 left-0 right-0 z-50 bg-white transition-all duration-300 ${
-        scrolled ? "shadow-md border-b border-[#E0E0E0]" : "border-b border-[#E0E0E0]"
-      }`}>
+      <nav
+        className={`fixed top-8 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled ? "shadow-md" : ""
+        }`}
+        style={{
+          backgroundColor: navBg,
+          borderBottom: `1px solid ${navBorder}`,
+        }}
+      >
         <div className="flex items-center h-16 px-4 md:px-8 gap-4">
 
           {/* LEFT — Logo */}
@@ -124,10 +144,13 @@ export default function Navbar() {
                 </svg>
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-lg font-bold tracking-[0.15em] uppercase text-[#333333] group-hover:text-[#7EC8E3] transition-colors duration-300">
+                <span
+                  className="text-lg font-bold tracking-[0.15em] uppercase group-hover:text-[#7EC8E3] transition-colors duration-300"
+                  style={{ color: textPrimary }}
+                >
                   Drip
                 </span>
-                <span className="text-[8px] tracking-[0.3em] uppercase text-[#AAAAAA]">Premium</span>
+                <span className="text-[8px] tracking-[0.3em] uppercase" style={{ color: textFaint }}>Premium</span>
               </div>
             </Link>
           </div>
@@ -144,8 +167,9 @@ export default function Navbar() {
                 key={link.to}
                 to={link.to}
                 className={`uppercase transition-all duration-200 relative group pb-0.5 ${
-                  isActive(link.to) ? "text-[#7EC8E3]" : "text-[#555555] hover:text-[#333333]"
+                  isActive(link.to) ? "text-[#7EC8E3]" : ""
                 }`}
+                style={{ color: isActive(link.to) ? "#7EC8E3" : textMuted }}
               >
                 {link.label}
                 <span className={`absolute bottom-0 left-0 h-px bg-[#7EC8E3] transition-all duration-300 ${
@@ -153,10 +177,7 @@ export default function Navbar() {
                 }`}/>
               </Link>
             ))}
-            <Link
-              to="/sale"
-              className="uppercase text-[#FF6B6B] hover:opacity-70 transition-opacity relative"
-            >
+            <Link to="/sale" className="uppercase text-[#FF6B6B] hover:opacity-70 transition-opacity relative">
               Sale
               <span className="absolute -top-1.5 -right-2 w-1.5 h-1.5 rounded-full bg-[#FF6B6B] animate-pulse"/>
             </Link>
@@ -168,11 +189,11 @@ export default function Navbar() {
             {/* Search */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
-                searchOpen
-                  ? "bg-[#E8F8FC] text-[#7EC8E3]"
-                  : "text-[#888888] hover:text-[#333333] hover:bg-[#F4F4F4]"
-              }`}
+              className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
+              style={{
+                backgroundColor: searchOpen ? "#E8F8FC" : "transparent",
+                color: searchOpen ? "#7EC8E3" : textMuted,
+              }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                 <circle cx="11" cy="11" r="8"/>
@@ -183,21 +204,21 @@ export default function Navbar() {
             {/* Contact — desktop */}
             <Link
               to="/contact"
-              className="hidden md:block text-[11px] tracking-widest uppercase text-[#888888] hover:text-[#333333] transition-colors px-1"
+              className="hidden md:block text-[11px] tracking-widest uppercase transition-colors px-1 hover:text-[#7EC8E3]"
+              style={{ color: textMuted }}
             >
               Contact
             </Link>
 
-            {/* Wishlist — desktop + mobile */}
+            {/* Wishlist */}
             <Link
               to="/wishlist"
-              className="relative w-8 h-8 flex items-center justify-center rounded-full transition-colors text-[#888888] hover:text-[#FF6B6B] hover:bg-[#FFF0F0]"
+              className="relative w-8 h-8 flex items-center justify-center rounded-full transition-colors hover:bg-[#FFF0F0]"
+              style={{ color: wCount > 0 ? "#FF6B6B" : textMuted }}
               title="Wishlist"
             >
               <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
+                width="15" height="15" viewBox="0 0 24 24"
                 fill={wCount > 0 ? "#FF6B6B" : "none"}
                 stroke={wCount > 0 ? "#FF6B6B" : "currentColor"}
                 strokeWidth="1.8"
@@ -212,10 +233,57 @@ export default function Navbar() {
               )}
             </Link>
 
+            {/* Dark mode toggle */}
+            <button
+              onClick={toggle}
+              className="relative w-8 h-8 flex items-center justify-center transition-all duration-300 border"
+              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+              style={{
+                backgroundColor: isDark ? "#222222" : "white",
+                borderColor: navBorder,
+              }}
+            >
+              {/* Sun */}
+              <svg
+                width="13" height="13" viewBox="0 0 24 24"
+                fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round"
+                style={{
+                  position: "absolute",
+                  transition: "all 0.3s ease",
+                  opacity: isDark ? 0 : 1,
+                  transform: isDark ? "rotate(90deg) scale(0.5)" : "rotate(0deg) scale(1)",
+                }}
+              >
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+              {/* Moon */}
+              <svg
+                width="13" height="13" viewBox="0 0 24 24"
+                fill="none" stroke="#7EC8E3" strokeWidth="2" strokeLinecap="round"
+                style={{
+                  position: "absolute",
+                  transition: "all 0.3s ease",
+                  opacity: isDark ? 1 : 0,
+                  transform: isDark ? "rotate(0deg) scale(1)" : "rotate(-90deg) scale(0.5)",
+                }}
+              >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            </button>
+
             {/* Cart */}
             <button
               onClick={openCart}
-              className="relative flex items-center gap-1.5 h-8 px-2 md:px-3 bg-[#333333] text-white text-[10px] tracking-widest uppercase hover:bg-[#7EC8E3] transition-colors duration-300"
+              className="relative flex items-center gap-1.5 h-8 px-2 md:px-3 text-white text-[10px] tracking-widest uppercase transition-colors duration-300 hover:bg-[#7EC8E3]"
+              style={{ backgroundColor: isDark ? "#2a2a2a" : "#333333" }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
@@ -235,18 +303,24 @@ export default function Navbar() {
               onClick={() => setMenuOpen(!menuOpen)}
               className="md:hidden w-8 h-8 flex flex-col items-center justify-center gap-[5px] ml-1"
             >
-              <span className={`block w-5 h-px bg-[#333333] transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-[3px]" : ""}`}/>
-              <span className={`block h-px bg-[#333333] transition-all duration-300 ${menuOpen ? "opacity-0 w-0" : "w-5"}`}/>
-              <span className={`block w-5 h-px bg-[#333333] transition-all duration-300 origin-center ${menuOpen ? "-rotate-45 -translate-y-[3px]" : ""}`}/>
+              <span className={`block w-5 h-px transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-[3px]" : ""}`} style={{ backgroundColor: textPrimary }}/>
+              <span className={`block h-px transition-all duration-300 ${menuOpen ? "opacity-0 w-0" : "w-5"}`} style={{ backgroundColor: textPrimary }}/>
+              <span className={`block w-5 h-px transition-all duration-300 origin-center ${menuOpen ? "-rotate-45 -translate-y-[3px]" : ""}`} style={{ backgroundColor: textPrimary }}/>
             </button>
           </div>
         </div>
 
         {/* Search Dropdown */}
         {searchOpen && (
-          <div ref={searchRef} className="border-t border-[#E0E0E0] bg-white">
-            <div className="flex items-center gap-3 px-4 md:px-8 py-3 border-b border-[#F4F4F4]">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#AAAAAA" strokeWidth="1.5">
+          <div
+            ref={searchRef}
+            style={{ backgroundColor: navBg, borderTop: `1px solid ${navBorder}` }}
+          >
+            <div
+              className="flex items-center gap-3 px-4 md:px-8 py-3"
+              style={{ borderBottom: `1px solid ${navBorder}` }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={textFaint} strokeWidth="1.5">
                 <circle cx="11" cy="11" r="8"/>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
@@ -257,19 +331,22 @@ export default function Navbar() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleSearchSubmit}
                 placeholder="Search products, categories, styles..."
-                className="flex-1 bg-transparent text-sm text-[#333333] outline-none placeholder-[#CCCCCC]"
+                className="flex-1 bg-transparent text-sm outline-none"
+                style={{ color: textPrimary }}
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="text-[10px] tracking-widest uppercase text-[#AAAAAA] hover:text-[#333333] transition-colors px-2"
+                  className="text-[10px] tracking-widest uppercase px-2 hover:text-[#7EC8E3] transition-colors"
+                  style={{ color: textMuted }}
                 >
                   Clear
                 </button>
               )}
               <button
                 onClick={() => { setSearchOpen(false); setSearchQuery("") }}
-                className="text-[10px] tracking-widest uppercase text-[#AAAAAA] hover:text-[#333333] transition-colors border-l border-[#E0E0E0] pl-3"
+                className="text-[10px] tracking-widest uppercase pl-3 hover:text-[#7EC8E3] transition-colors"
+                style={{ color: textMuted, borderLeft: `1px solid ${navBorder}` }}
               >
                 ✕
               </button>
@@ -279,19 +356,28 @@ export default function Navbar() {
               <div className="max-h-[60vh] overflow-y-auto">
                 {searchResults.length > 0 ? (
                   <>
-                    <div className="px-4 md:px-8 py-2 bg-[#FAF5EF] border-b border-[#F4F4F4]">
-                      <p className="text-[9px] tracking-widest uppercase text-[#AAAAAA]">
+                    <div
+                      className="px-4 md:px-8 py-2"
+                      style={{ backgroundColor: bgPrimary, borderBottom: `1px solid ${navBorder}` }}
+                    >
+                      <p className="text-[9px] tracking-widest uppercase" style={{ color: textFaint }}>
                         {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} for "{searchQuery}"
                       </p>
                     </div>
-                    <div className="divide-y divide-[#F4F4F4]">
+                    <div style={{ borderTop: `1px solid ${navBorder}` }}>
                       {searchResults.map((product) => (
                         <button
                           key={product.id}
                           onClick={() => handleSearchSelect(product.id)}
-                          className="w-full flex items-center gap-4 px-4 md:px-8 py-3 hover:bg-[#FAF5EF] transition-colors text-left group"
+                          className="w-full flex items-center gap-4 px-4 md:px-8 py-3 transition-colors text-left group"
+                          style={{ borderBottom: `1px solid ${navBorder}` }}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = bgPrimary)}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                         >
-                          <div className="w-12 h-14 bg-white border border-[#E0E0E0] shrink-0 overflow-hidden">
+                          <div
+                            className="w-12 h-14 shrink-0 overflow-hidden border"
+                            style={{ backgroundColor: navBg, borderColor: navBorder }}
+                          >
                             <ModelViewer
                               type={product.type}
                               color={product.color}
@@ -300,21 +386,18 @@ export default function Navbar() {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[#333333] group-hover:text-[#7EC8E3] transition-colors truncate">
+                            <p className="text-sm font-medium group-hover:text-[#7EC8E3] transition-colors truncate" style={{ color: textPrimary }}>
                               {product.name}
                             </p>
-                            <p className="text-[10px] text-[#AAAAAA] tracking-wide mt-0.5">
+                            <p className="text-[10px] tracking-wide mt-0.5" style={{ color: textFaint }}>
                               {product.category} · {product.gender} · ${product.price}
                             </p>
-                            <p className="text-[10px] text-[#BBBBBB] truncate hidden md:block">
+                            <p className="text-[10px] truncate hidden md:block" style={{ color: textMuted }}>
                               {product.description}
                             </p>
                           </div>
                           <div className="flex flex-col items-end gap-1.5 shrink-0">
-                            <div
-                              className="w-4 h-4 rounded-full border border-[#E0E0E0]"
-                              style={{ background: product.color }}
-                            />
+                            <div className="w-4 h-4 rounded-full border" style={{ background: product.color, borderColor: navBorder }}/>
                             <span className="text-[8px] tracking-widest uppercase bg-[#7EC8E3] text-white px-1.5 py-0.5">
                               {product.tag}
                             </span>
@@ -322,26 +405,29 @@ export default function Navbar() {
                         </button>
                       ))}
                     </div>
-                    <div className="px-4 md:px-8 py-3 border-t border-[#E0E0E0] bg-[#FAF5EF]">
+                    <div
+                      className="px-4 md:px-8 py-3"
+                      style={{ borderTop: `1px solid ${navBorder}`, backgroundColor: bgPrimary }}
+                    >
                       <Link
                         to="/shop"
                         onClick={() => { setSearchOpen(false); setSearchQuery("") }}
                         className="text-[10px] tracking-widest uppercase text-[#7EC8E3] hover:underline"
                       >
-                        View all {searchResults.length} results in Shop →
+                        View all {searchResults.length} results in Shop
                       </Link>
                     </div>
                   </>
                 ) : (
                   <div className="px-4 md:px-8 py-8 text-center">
-                    <p className="text-sm text-[#888888] mb-1">No results for "{searchQuery}"</p>
-                    <p className="text-xs text-[#BBBBBB]">Try searching for hoodies, jackets, dresses...</p>
+                    <p className="text-sm mb-1" style={{ color: textMuted }}>No results for "{searchQuery}"</p>
+                    <p className="text-xs" style={{ color: textMuted }}>Try searching for hoodies, jackets, dresses...</p>
                     <Link
                       to="/shop"
                       onClick={() => { setSearchOpen(false); setSearchQuery("") }}
                       className="inline-block mt-4 text-[10px] tracking-widest uppercase text-[#7EC8E3] hover:underline"
                     >
-                      Browse all products →
+                      Browse all products
                     </Link>
                   </div>
                 )}
@@ -350,13 +436,14 @@ export default function Navbar() {
 
             {searchQuery.trim().length <= 1 && (
               <div className="px-4 md:px-8 py-4">
-                <p className="text-[9px] tracking-widest uppercase text-[#AAAAAA] mb-3">Popular searches</p>
+                <p className="text-[9px] tracking-widest uppercase mb-3" style={{ color: textFaint }}>Popular searches</p>
                 <div className="flex gap-2 flex-wrap">
                   {["Hoodie", "Jacket", "Dress", "Coat", "Pants", "Sale"].map((term) => (
                     <button
                       key={term}
                       onClick={() => setSearchQuery(term)}
-                      className="px-3 py-1.5 bg-[#FAF5EF] border border-[#E0E0E0] text-[10px] tracking-widest uppercase text-[#888888] hover:border-[#7EC8E3] hover:text-[#7EC8E3] transition-colors"
+                      className="px-3 py-1.5 border text-[10px] tracking-widest uppercase hover:border-[#7EC8E3] hover:text-[#7EC8E3] transition-colors"
+                      style={{ backgroundColor: bgPrimary, borderColor: navBorder, color: textMuted }}
                     >
                       {term}
                     </button>
@@ -373,15 +460,22 @@ export default function Navbar() {
         menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}>
         <div
-          className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+          className="absolute inset-0 backdrop-blur-sm"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
           onClick={() => setMenuOpen(false)}
         />
-        <div className={`absolute top-0 left-0 bottom-0 w-[80%] max-w-xs bg-white flex flex-col transition-transform duration-300 ${
-          menuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}>
+        <div
+          className={`absolute top-0 left-0 bottom-0 w-[80%] max-w-xs flex flex-col transition-transform duration-300 ${
+            menuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+          style={{ backgroundColor: navBg }}
+        >
 
           {/* Drawer header */}
-          <div className="flex items-center justify-between px-5 py-5 border-b border-[#E0E0E0]">
+          <div
+            className="flex items-center justify-between px-5 py-5"
+            style={{ borderBottom: `1px solid ${navBorder}` }}
+          >
             <Link to="/" className="flex items-center gap-2">
               <div className="w-7 h-7">
                 <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
@@ -392,13 +486,14 @@ export default function Navbar() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-bold tracking-[0.15em] uppercase text-[#333333]">Drip</p>
-                <p className="text-[8px] tracking-[0.3em] uppercase text-[#AAAAAA]">Premium</p>
+                <p className="text-sm font-bold tracking-[0.15em] uppercase" style={{ color: textPrimary }}>Drip</p>
+                <p className="text-[8px] tracking-[0.3em] uppercase" style={{ color: textFaint }}>Premium</p>
               </div>
             </Link>
             <button
               onClick={() => setMenuOpen(false)}
-              className="w-8 h-8 flex items-center justify-center text-[#888888] hover:text-[#333333] rounded-full hover:bg-[#F4F4F4] transition-colors text-lg"
+              className="w-8 h-8 flex items-center justify-center rounded-full transition-colors text-lg hover:bg-[#F4F4F4]"
+              style={{ color: textMuted }}
             >
               ✕
             </button>
@@ -406,7 +501,7 @@ export default function Navbar() {
 
           {/* Nav links */}
           <div className="flex-1 overflow-y-auto px-5 py-4">
-            <p className="text-[9px] tracking-[0.3em] uppercase text-[#AAAAAA] mb-3">Navigate</p>
+            <p className="text-[9px] tracking-[0.3em] uppercase mb-3" style={{ color: textFaint }}>Navigate</p>
             <div className="space-y-1">
               {[
                 { to: "/",             label: "Home",         icon: "🏠" },
@@ -419,11 +514,11 @@ export default function Navbar() {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`flex items-center justify-between px-3 py-3.5 rounded-lg text-sm tracking-widest uppercase transition-all ${
-                    isActive(link.to)
-                      ? "bg-[#E8F8FC] text-[#7EC8E3] font-medium"
-                      : "text-[#444444] hover:bg-[#F4F4F4] hover:text-[#333333]"
-                  }`}
+                  className="flex items-center justify-between px-3 py-3.5 rounded-lg text-sm tracking-widest uppercase transition-all"
+                  style={{
+                    backgroundColor: isActive(link.to) ? "#E8F8FC" : "transparent",
+                    color: isActive(link.to) ? "#7EC8E3" : textPrimary,
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-base">{link.icon}</span>
@@ -454,7 +549,7 @@ export default function Navbar() {
             </div>
 
             <div className="mt-6">
-              <p className="text-[9px] tracking-[0.3em] uppercase text-[#AAAAAA] mb-3">Help</p>
+              <p className="text-[9px] tracking-[0.3em] uppercase mb-3" style={{ color: textFaint }}>Help</p>
               <div className="space-y-1">
                 {[
                   { to: "/shipping", label: "Shipping" },
@@ -464,7 +559,8 @@ export default function Navbar() {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className="flex items-center justify-between px-3 py-2.5 text-xs tracking-widest uppercase text-[#888888] hover:text-[#333333] hover:bg-[#F4F4F4] rounded-lg transition-all"
+                    className="flex items-center justify-between px-3 py-2.5 text-xs tracking-widest uppercase rounded-lg transition-all hover:text-[#333333]"
+                    style={{ color: textMuted }}
                   >
                     {link.label}
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-30">
@@ -474,13 +570,43 @@ export default function Navbar() {
                 ))}
               </div>
             </div>
+
+            {/* Dark mode toggle in mobile menu */}
+            <div className="mt-6 pt-4" style={{ borderTop: `1px solid ${navBorder}` }}>
+              <p className="text-[9px] tracking-[0.3em] uppercase mb-3" style={{ color: textFaint }}>Appearance</p>
+              <button
+                onClick={toggle}
+                className="w-full flex items-center justify-between px-3 py-3.5 rounded-lg text-sm tracking-widest uppercase transition-all"
+                style={{ color: textPrimary }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = bgTertiary)}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-base">{isDark ? "☀️" : "🌙"}</span>
+                  <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
+                </div>
+                <div
+                  className="w-10 h-5 rounded-full relative transition-all duration-300"
+                  style={{ backgroundColor: isDark ? "#7EC8E3" : "#E0E0E0" }}
+                >
+                  <div
+                    className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all duration-300 shadow-sm"
+                    style={{ left: isDark ? "calc(100% - 18px)" : "2px" }}
+                  />
+                </div>
+              </button>
+            </div>
           </div>
 
           {/* Drawer footer */}
-          <div className="px-5 py-5 border-t border-[#E0E0E0] space-y-3 bg-[#FAF5EF]">
+          <div
+            className="px-5 py-5 space-y-3"
+            style={{ borderTop: `1px solid ${navBorder}`, backgroundColor: bgPrimary }}
+          >
             <button
               onClick={() => { openCart(); setMenuOpen(false) }}
-              className="w-full flex items-center justify-between px-4 py-3.5 bg-[#333333] text-white text-xs tracking-widest uppercase hover:bg-[#7EC8E3] transition-colors duration-300"
+              className="w-full flex items-center justify-between px-4 py-3.5 text-white text-xs tracking-widest uppercase hover:bg-[#7EC8E3] transition-colors duration-300"
+              style={{ backgroundColor: isDark ? "#2a2a2a" : "#333333" }}
             >
               <span>View Cart</span>
               <div className="flex items-center gap-2">
@@ -496,7 +622,7 @@ export default function Navbar() {
                 </svg>
               </div>
             </button>
-            <div className="flex items-center justify-center gap-4 text-[10px] tracking-widest uppercase text-[#AAAAAA]">
+            <div className="flex items-center justify-center gap-4 text-[10px] tracking-widest uppercase" style={{ color: textFaint }}>
               <span>Instagram</span>
               <span>·</span>
               <span>Twitter</span>
@@ -508,7 +634,7 @@ export default function Navbar() {
       </div>
 
       {/* Spacer */}
-      <div className="h-24" />
+      <div className="h-24"/>
     </>
   )
 }
