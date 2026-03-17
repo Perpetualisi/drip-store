@@ -3,7 +3,6 @@
 A premium 3D clothing store built with React. Every product has a animated 3D garment you can view before buying.
 
 **Live site:** [https://drip-store-sooty.vercel.app/] 
-**Demo video:** [https://www.youtube.com/watch?v=4g8Y3Zj8zqg]
 
 ## Tech stack
 
